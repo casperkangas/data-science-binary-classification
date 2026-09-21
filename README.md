@@ -26,6 +26,9 @@ To run the web scraper and extract the book data:
 # Make sure the virtual environment is active
 source venv/bin/activate
 
-# Execute the scraper
+# Run the scraper to get the initial CSV file
 python scraper.py
+
+# Download the physical image files
+python download_images.py
 ```
