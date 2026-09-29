@@ -22,3 +22,15 @@ vectorizer = TfidfVectorizer(max_features=1000, stop_words='english')
 
 # 'fit_transform' analyzes the vocabulary and turns the text into a math matrix
 X_features = vectorizer.fit_transform(X_text)
+
+print("Splitting data into Training and Testing sets...")
+# Hide 20% of the data to give the model a "fair test" later and random_state=42 is just a seed that ensures the exact same split every run
+X_train, X_test, y_train, y_test = train_test_split(X_features, y_target, test_size=0.2, random_state=42)
+
+print("Training the Logistic Regression model...")
+
+# Initialize the model
+model = LogisticRegression()
+
+# The .fit() command is where the actual "learning" happens, with feeding it the training keywords (X_train) and the correct answers (y_train)
+model.fit(X_train, y_train)
