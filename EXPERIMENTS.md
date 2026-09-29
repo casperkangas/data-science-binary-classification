@@ -8,3 +8,5 @@
 | 2026-09-29 14:30 | Title + Description (TF-IDF max 1000) | Logistic Regression | 51.43%         |
 | 2026-09-29 14:30 | Title + Description (TF-IDF max 75)   | Logistic Regression | 65.71%         |
 | 2026-09-29 14:30 | Title + Description (TF-IDF max 125)  | Logistic Regression | 57.14%         |
+| 2026-09-29 14:39 | Title + Description (TF-IDF max 100)  | Logistic Regression | 65.71%         |
+| 2026-09-29 14:39 | Title + Description (TF-IDF max 100)  | Random Forest       | 71.43%         |

@@ -4,6 +4,7 @@ import argparse
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report
 
 # Command-line argument parsing, which allows the user to run: python model_training.py --model RF --features 150
@@ -37,8 +38,9 @@ X_train, X_test, y_train, y_test = train_test_split(X_features, y_target, test_s
 
 models_to_test = {}
 if args.model in ['LR', 'ALL']:
-    models_to_test['Logistic Regression'] = LogisticRegression()
-# TODO: Add Random Forest model
+    models_to_test['Logistic Regression'] = LogisticRegression(max_iter=1000, random_state=42)
+if args.model in ['RF', 'ALL']:
+    models_to_test['Random Forest'] = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42)
 
 for model_name, model in models_to_test.items():
     print(f"\n--- Training {model_name} ---")
