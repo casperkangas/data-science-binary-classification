@@ -6,11 +6,13 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
+from sklearn.svm import LinearSVC
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score, classification_report
 
 # Command-line argument parsing, which allows the user to run: python model_training.py --model RF --features 150
 parser = argparse.ArgumentParser(description="Train a book classification model.")
-parser.add_argument('--model', type=str, choices=['LR', 'RF', 'MLP', 'ALL'], default='LR', help="Choose LR (Logistic Regression), RF (Random Forest), MLP (Multi-Layer Perceptron), or ALL")
+parser.add_argument('--model', type=str, choices=['LR', 'RF', 'MLP', 'SVM', 'NB', 'ALL'], default='LR', help="Choose LR (Logistic Regression), RF (Random Forest), MLP (Multi-Layer Perceptron), SVM (Support Vector Machine), NB (Naive Bayes), or ALL")
 parser.add_argument('--features', type=int, default=100, help="Max number of words for TF-IDF to track")
 args = parser.parse_args()
 
@@ -39,11 +41,15 @@ X_train, X_test, y_train, y_test = train_test_split(X_features, y_target, test_s
 
 models_to_test = {}
 if args.model in ['LR', 'ALL']:
-    models_to_test['Logistic Regression'] = LogisticRegression(max_iter=1000, random_state=42)
+    models_to_test['Logistic Regression'] = LogisticRegression(max_iter=2000, random_state=42)
 if args.model in ['RF', 'ALL']:
     models_to_test['Random Forest'] = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42)
 if args.model in ['MLP', 'ALL']:
-    models_to_test['Multi-Layer Perceptron'] = MLPClassifier(hidden_layer_sizes=(100,), max_iter=1000, random_state=42)
+    models_to_test['Multi-Layer Perceptron'] = MLPClassifier(hidden_layer_sizes=(100,), max_iter=2000, random_state=42)
+if args.model in ['SVM', 'ALL']:
+    models_to_test['Support Vector Machine'] = LinearSVC(max_iter=2000, random_state=42)
+if args.model in ['NB', 'ALL']:
+    models_to_test['Naive Bayes'] = MultinomialNB()
 
 for model_name, model in models_to_test.items():
     print(f"\n--- Training {model_name} ---")
