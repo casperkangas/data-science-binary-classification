@@ -31,9 +31,7 @@ def download_image(img_url, filename, output_dir="data/images"):
     return local_path
 
 def scrape_book_details(book_url, category_name, book_id):
-    """
-    Visits an individual book's page to extract necessary details.
-    """
+    # Visits an individual book's page to extract necessary details.
     soup = get_soup(book_url)
     
     # Title
