@@ -1,22 +1,14 @@
 import pandas as pd
 import re
 import os
+import unicodedata
 
 def clean_text(text):
     if pd.isna(text):
         return ""
-    text = str(text)
-    
-    # 1. Remove non-ASCII characters (this gets rid of weird symbols, foreign letters, and corrupted encodings, which are apparent in the scraped data)
-    text = re.sub(r'[^\x00-\x7F]+', ' ', text)
-    
-    # 2. Lowercase everything (so "The" and "the" are treated the same by the algorithm(s))
-    text = text.lower()
-    
-    # 3. Remove punctuation and numbers (keeping only letters for text analysis)
-    text = re.sub(r'[^a-z\s]', ' ', text)
-    
-    # 4. Remove extra spaces
+    text = unicodedata.normalize("NFKC", str(text)).lower()
+
+    # Keep letters, accents, numbers, and punctuation for the vectorizer
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
