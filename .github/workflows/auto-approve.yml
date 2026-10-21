@@ -1,6 +1,6 @@
 name: Auto approve
 
-on: workflow_dispatch
+on: pull_request_target
 
 jobs:
   auto-approve:
