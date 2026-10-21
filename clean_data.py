@@ -3,10 +3,22 @@ import re
 import os
 import unicodedata
 
+def repair_mojibake(text):
+    # Repair UTF-8 text that was previously decoded as Latin-1 by the scraper
+    markers = ("\u00c3", "\u00e2\u0080")
+    if not any(marker in text for marker in markers):
+        return text
+
+    try:
+        return text.encode("latin-1").decode("utf-8")
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return text
+
 def clean_text(text):
     if pd.isna(text):
         return ""
-    text = unicodedata.normalize("NFKC", str(text)).lower()
+    text = repair_mojibake(str(text))
+    text = unicodedata.normalize("NFKC", text).lower()
 
     # Keep letters, accents, numbers, and punctuation for the vectorizer
     text = re.sub(r'\s+', ' ', text).strip()
