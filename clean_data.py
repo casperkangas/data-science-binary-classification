@@ -1,22 +1,26 @@
 import pandas as pd
 import re
 import os
+import unicodedata
+
+def repair_mojibake(text):
+    # Repair UTF-8 text that was previously decoded as Latin-1 by the scraper
+    markers = ("\u00c3", "\u00e2\u0080")
+    if not any(marker in text for marker in markers):
+        return text
+
+    try:
+        return text.encode("latin-1").decode("utf-8")
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return text
 
 def clean_text(text):
     if pd.isna(text):
         return ""
-    text = str(text)
-    
-    # 1. Remove non-ASCII characters (this gets rid of weird symbols, foreign letters, and corrupted encodings, which are apparent in the scraped data)
-    text = re.sub(r'[^\x00-\x7F]+', ' ', text)
-    
-    # 2. Lowercase everything (so "The" and "the" are treated the same by the algorithm(s))
-    text = text.lower()
-    
-    # 3. Remove punctuation and numbers (keeping only letters for text analysis)
-    text = re.sub(r'[^a-z\s]', ' ', text)
-    
-    # 4. Remove extra spaces
+    text = repair_mojibake(str(text))
+    text = unicodedata.normalize("NFKC", text).lower()
+
+    # Keep letters, accents, numbers, and punctuation for the vectorizer
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 

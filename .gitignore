@@ -1,24 +1,15 @@
-# Virtual Environments
 venv/
 env/
 .env
-
-# Data Files
 *.csv
 data/
-
-# Image Files
 *.jpg
 *.jpeg
 *.png
-
-# Python / Jupyter specific
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
 .pytest_cache/
-
-# OS generated files
 .DS_Store
 .DS_Store?
 ._*
