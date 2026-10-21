@@ -28,3 +28,8 @@
 | 2026-10-21 11:06 | Title + Description (TF-IDF max 100; word n-grams 1-1; 5-fold x 5 repeated stratified CV; LR C=1)   | Logistic Regression    | 73.94% +/- 5.44% |
 | 2026-10-21 11:06 | Title + Description (TF-IDF max 100; word n-grams 1-1; 5-fold x 5 repeated stratified CV; LR C=10)  | Logistic Regression    | 74.86% +/- 7.05% |
 | 2026-10-21 11:06 | Title + Description (TF-IDF max 100; word n-grams 1-2; 5-fold x 5 repeated stratified CV; LR C=1)   | Logistic Regression    | 73.49% +/- 5.33% |
+| 2026-10-21 11:19 | Title + Description (TF-IDF max 100; word n-grams 1-1; stratified 80/20 holdout, seed 42; LR C=10)  | Logistic Regression    | 71.43%           |
+| 2026-10-21 11:19 | Title + Description (TF-IDF max 100; word n-grams 1-1; stratified 80/20 holdout, seed 42)           | Random Forest          | 74.29%           |
+| 2026-10-21 11:19 | Title + Description (TF-IDF max 100; word n-grams 1-1; stratified 80/20 holdout, seed 42)           | Multi-Layer Perceptron | 65.71%           |
+| 2026-10-21 11:19 | Title + Description (TF-IDF max 100; word n-grams 1-1; stratified 80/20 holdout, seed 42)           | Support Vector Machine | 65.71%           |
+| 2026-10-21 11:19 | Title + Description (TF-IDF max 100; word n-grams 1-1; stratified 80/20 holdout, seed 42)           | Naive Bayes            | 74.29%           |

@@ -1,13 +1,14 @@
 import pandas as pd
 import datetime
 import argparse
-from sklearn.model_selection import RepeatedStratifiedKFold, cross_validate
+from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import LinearSVC
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, classification_report
 from sklearn.pipeline import make_pipeline
 
 # Command-line argument parsing, which allows the user to run: python model_training.py --model RF --features 150
@@ -17,8 +18,6 @@ parser.add_argument('--features', type=int, default=100, help="Max number of wor
 parser.add_argument('--lr-c', type=float, default=1.0, help="Regularization strength for Logistic Regression (smaller values mean stronger regularization)")
 parser.add_argument('--ngram-min', type=int, default=1, help="Minimum word n-gram size for TF-IDF")
 parser.add_argument('--ngram-max', type=int, default=1, help="Maximum word n-gram size for TF-IDF")
-parser.add_argument('--cv-folds', type=int, default=5, help="Number of stratified cross-validation folds")
-parser.add_argument('--cv-repeats', type=int, default=5, help="Number of times to repeat stratified cross-validation")
 args = parser.parse_args()
 
 if args.features < 1:
@@ -29,10 +28,6 @@ if args.ngram_min < 1 or args.ngram_max < 1:
     parser.error("--ngram-min and --ngram-max must be at least 1")
 if args.ngram_min > args.ngram_max:
     parser.error("--ngram-min cannot be greater than --ngram-max")
-if args.cv_folds < 2:
-    parser.error("--cv-folds must be at least 2")
-if args.cv_repeats < 1:
-    parser.error("--cv-repeats must be at least 1")
 
 # Load the cleaned dataset
 print("Loading cleaned dataset...")
@@ -46,24 +41,25 @@ X_text = df['combined_text']  # Input feature
 y_target = df['category']   # Target label (the category)
 
 print("Converting text into mathematical features (TF-IDF)...")
+print(f"TF-IDF settings: max_features={args.features}, word n-grams={args.ngram_min}-{args.ngram_max}")
+print("Evaluation: stratified 80/20 holdout (random_state=42)")
 
-# Initialize the vectorizer, which will be fitted separately inside each training fold
+# Initialize the vectorizer. The pipeline fits it only on the training split.
 # max_features limits the vocabulary to the most frequent terms, while ngram_range adds adjacent word combinations when --ngram-max is greater than 1
 vectorizer = TfidfVectorizer(
     max_features=args.features,
     stop_words='english',
     ngram_range=(args.ngram_min, args.ngram_max),
 )
-cv = RepeatedStratifiedKFold(
-    n_splits=args.cv_folds,
-    n_repeats=args.cv_repeats,
+
+# Use one reproducible, stratified 80/20 split for a single set of test metrics
+X_train, X_test, y_train, y_test = train_test_split(
+    X_text,
+    y_target,
+    test_size=0.2,
     random_state=42,
+    stratify=y_target,
 )
-scoring = {
-    'accuracy': 'accuracy',
-    'balanced_accuracy': 'balanced_accuracy',
-    'macro_f1': 'f1_macro',
-}
 
 models_to_test = {}
 if args.model in ['LR', 'ALL']:
@@ -79,24 +75,16 @@ if args.model in ['NB', 'ALL']:
 
 for model_name, model in models_to_test.items():
     print(f"\n--- Training {model_name} ---")
+    if model_name == 'Logistic Regression':
+        print(f"Logistic Regression setting: C={args.lr_c:g}")
     pipeline = make_pipeline(vectorizer, model)
-    scores = cross_validate(
-        pipeline,
-        X_text,
-        y_target,
-        cv=cv,
-        scoring=scoring,
-        n_jobs=-1,
-    )
+    pipeline.fit(X_train, y_train)
+    y_predictions = pipeline.predict(X_test)
 
-    print(f"Results over {args.cv_folds} folds x {args.cv_repeats} repeats:")
-    for metric_name, label in (
-        ('accuracy', 'Accuracy'),
-        ('balanced_accuracy', 'Balanced accuracy'),
-        ('macro_f1', 'Macro F1'),
-    ):
-        fold_scores = scores[f'test_{metric_name}']
-        print(f"{label}: {fold_scores.mean() * 100:.2f}% +/- {fold_scores.std() * 100:.2f}%")
+    accuracy = accuracy_score(y_test, y_predictions)
+    print(f"\n*** Final {model_name} Accuracy: {accuracy * 100:.2f}% ***\n")
+    print(f"Detailed Classification Report: {model_name}")
+    print(classification_report(y_test, y_predictions, zero_division=0))
 
     # Append the results to the log file EXPERIMENTS.md
     with open("EXPERIMENTS.md", "a") as f:
@@ -104,11 +92,9 @@ for model_name, model in models_to_test.items():
         inputs_used = (
             f"Title + Description (TF-IDF max {args.features}; "
             f"word n-grams {args.ngram_min}-{args.ngram_max}; "
-            f"{args.cv_folds}-fold x {args.cv_repeats} repeated stratified CV"
+            "stratified 80/20 holdout, seed 42"
         )
         if model_name == 'Logistic Regression':
             inputs_used += f"; LR C={args.lr_c:g}"
-        accuracy_scores = scores['test_accuracy']
-        accuracy_summary = f"{accuracy_scores.mean() * 100:.2f}% +/- {accuracy_scores.std() * 100:.2f}%"
-        f.write(f"| {date_str} | {inputs_used}) | {model_name} | {accuracy_summary} |\n")
+        f.write(f"| {date_str} | {inputs_used}) | {model_name} | {accuracy * 100:.2f}% |\n")
     print(f"Results logged to EXPERIMENTS.md!")
