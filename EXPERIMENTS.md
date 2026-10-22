@@ -43,3 +43,4 @@
 | 2026-10-21 11:36 | Title + Description (TF-IDF analyzer char_wb; max 1000; n-grams 3-5; stratified 80/20 holdout, seed 42)             | Multi-Layer Perceptron | 71.43%           |
 | 2026-10-21 11:36 | Title + Description (TF-IDF analyzer char_wb; max 1000; n-grams 3-5; stratified 80/20 holdout, seed 42)             | Support Vector Machine | 74.29%           |
 | 2026-10-21 11:36 | Title + Description (TF-IDF analyzer char_wb; max 1000; n-grams 3-5; stratified 80/20 holdout, seed 42; NB alpha=1) | Naive Bayes            | 65.71%           |
+| 2026-10-22 21:48 | Title + Description (TF-IDF analyzer char_wb; max 1000; n-grams 3-5; stratified 80/20 holdout, seed 42)             | Random Forest          | 80.00%           |

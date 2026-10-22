@@ -50,8 +50,8 @@ df = pd.read_csv("books_data_clean.csv")
 df['combined_text'] = df['title'].fillna("") + " " + df['description'].fillna("")
 
 # Predict the 'category' based on the combined text
-X_text = df['combined_text']  # Input feature
-y_target = df['category']   # Target label (the category)
+X_text = df['combined_text']    # Input feature
+y_target = df['category']       # Target category
 
 print("Converting text into mathematical features (TF-IDF)...")
 stop_words = 'english' if args.analyzer == 'word' else None
@@ -93,7 +93,7 @@ if args.model in ['NB', 'ALL']:
     models_to_test['Naive Bayes'] = MultinomialNB(alpha=args.nb_alpha)
 
 for model_name, model in models_to_test.items():
-    print(f"\n--- Training {model_name} ---")
+    print(f"\nTraining {model_name}...")
     if model_name == 'Logistic Regression':
         print(f"Logistic Regression setting: C={args.lr_c:g}")
     if model_name == 'Naive Bayes':
@@ -103,8 +103,7 @@ for model_name, model in models_to_test.items():
     y_predictions = pipeline.predict(X_test)
 
     accuracy = accuracy_score(y_test, y_predictions)
-    print(f"\n*** Final {model_name} Accuracy: {accuracy * 100:.2f}% ***\n")
-    print(f"Detailed Classification Report: {model_name}")
+    print(f"\nFinal {model_name} Accuracy: {accuracy * 100:.2f}%\n")
     print(classification_report(y_test, y_predictions, zero_division=0))
 
     # Append the results to the log file EXPERIMENTS.md
@@ -120,4 +119,4 @@ for model_name, model in models_to_test.items():
         if model_name == 'Naive Bayes':
             inputs_used += f"; NB alpha={args.nb_alpha:g}"
         f.write(f"| {date_str} | {inputs_used}) | {model_name} | {accuracy * 100:.2f}% |\n")
-    print(f"Results logged to EXPERIMENTS.md!")
+    print(f"Results logged to EXPERIMENTS.md")
