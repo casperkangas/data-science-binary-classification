@@ -11,7 +11,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.pipeline import make_pipeline
 
-# Command-line argument parsing, which allows the user to run: python model_training.py --model RF --features 150
+# Command-line argument parsing (e.g., to replicate the best 80% model, run: python model_training.py --model RF --analyzer char_wb --features 1000)
 parser = argparse.ArgumentParser(description="Train a book classification model.")
 parser.add_argument('--model', type=str, choices=['LR', 'RF', 'MLP', 'SVM', 'NB', 'ALL'], default='LR', help="Choose LR (Logistic Regression), RF (Random Forest), MLP (Multi-Layer Perceptron), SVM (Support Vector Machine), NB (Naive Bayes), or ALL")
 parser.add_argument('--features', type=int, default=100, help="Maximum number of TF-IDF terms to track")

@@ -19,47 +19,68 @@ To ensure reproducibility and avoid conflicts with system-wide packages, this pr
    pip install -r requirements.txt
    ```
 
-## Running the Scraper
+## Running the Pipeline
 
-To run the web scraper and extract the book data:
+### 1. Web Scraping
+
+To scrape book titles, descriptions, categories, and cover images from Books to Scrape:
 
 ```bash
-# Make sure the virtual environment is active
-source venv/bin/activate
-
-# Run the scraper to get the initial CSV file with images included
 python scraper.py
 ```
 
-## Training the Model
+This extracts data for fiction and nonfiction categories and saves raw results to `books_data_full.csv` while archiving cover images to `data/images/`.
 
-Once the data is scraped and cleaned, you can train the machine learning algorithms to classify books as Fiction or Nonfiction by running the `model_training.py` script.
+### 2. Data Cleaning
 
-### Basic Usage (Defaults)
+To repair encoding artifacts (UTF-8 mojibake), normalize text, strip irregular whitespace, and prune empty rows:
 
-To run the training script with the default settings, simply execute:
+```bash
+python clean_data.py
+```
+
+This produces `books_data_clean.csv`, which is used for model training and evaluation.
+
+### 3. Model Training & Evaluation
+
+To run the training script with default baseline settings (Logistic Regression, 100 word features):
 
 ```bash
 python model_training.py
 ```
 
-**Default Settings:** If no arguments are provided, the script defaults to running a **Logistic Regression** model (`LR`) and limits the TF-IDF keyword extraction to a maximum of **100 features** (keywords).
+### Replicating the Best Result (80% Accuracy)
 
-### Advanced Usage (Command-Line Flags)
-
-You can customize the script on the fly by passing flags directly in your terminal. This is highly recommended for experimenting with different model configurations.
+To reproduce the peak-performing model from the report (Random Forest utilizing character n-grams with word boundaries and 1 000 features):
 
 ```bash
-# Run a Random Forest model with 200 TF-IDF features
-python model_training.py --model RF --features 200
-
-# Test both models with 50 TF-IDF features
-python model_training.py --model ALL --features 50
+python model_training.py --model RF --analyzer char_wb --features 1000
 ```
 
-#### Available Flags
+### Advanced Usage & Available Flags
 
-- `--model`: Selects the machine learning algorithm
-  - Options: `LR` (Logistic Regression), `RF` (Random Forest), or `ALL` (runs both models sequentially for direct comparison).
-- `--features`: Defines the maximum number of words for the TF-IDF vectorizer to track.
-  Accepts any integer (e.g., `50`, `100`, `500`). Lower numbers can help prevent overfitting on small datasets.
+You can customize the model and feature engineering pipeline on the fly using command-line arguments:
+
+```bash
+# Evaluate all models with character n-grams
+python model_training.py --model ALL --analyzer char_wb --features 1000
+
+# Run Naive Bayes with custom smoothing
+python model_training.py --model NB --nb-alpha 0.5
+
+# Run Logistic Regression with tuned regularization
+python model_training.py --model LR --lr-c 10.0
+```
+
+#### Command-Line Options
+
+- `--model`: Algorithm selection.
+  - Choices: `LR` (Logistic Regression), `RF` (Random Forest), `MLP` (Multi-Layer Perceptron), `SVM` (Support Vector Machine), `NB` (Naive Bayes), or `ALL` (runs all models sequentially).
+- `--analyzer`: Feature extraction mode.
+  - Choices: `word` (word-level tokens, default) or `char_wb` (character n-grams within word boundaries).
+- `--features`: Maximum number of TF-IDF terms to track (e.g. `100`, `500`, `1000`).
+- `--ngram-min` / `--ngram-max`: N-gram size boundaries (defaults to 1-1 for words, 3-5 for characters).
+- `--lr-c`: Regularization strength for Logistic Regression (default: `1.0`).
+- `--nb-alpha`: Additive Laplace smoothing parameter for Naive Bayes (default: `1.0`).
+
+All experimental runs and results are automatically logged to `EXPERIMENTS.md`.
