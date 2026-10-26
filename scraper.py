@@ -31,7 +31,7 @@ def download_image(img_url, filename, output_dir="data/images"):
     return local_path
 
 def scrape_book_details(book_url, category_name, book_id):
-    # Visits an individual book's page to extract necessary details.
+    # Visits an individual book's page to extract necessary details
     soup = get_soup(book_url)
     
     # Title
@@ -66,7 +66,7 @@ def scrape_category(start_url, category_name, start_id=0):
         print(f"Scraping category page: {current_url}")
         soup = get_soup(current_url)
         
-        # Get all book links on this category page
+        # Get all book links on current category page
         articles = soup.find_all('article', class_='product_pod')
         for article in articles:
             book_href = article.find('h3').find('a')['href']
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     # Combine data
     all_books_data = fiction_books + nonfiction_books
     
-    # Save to CSV
+    # Save to .csv file
     df = pd.DataFrame(all_books_data)
     csv_filename = "books_data_full.csv"
     df.to_csv(csv_filename, index=False)

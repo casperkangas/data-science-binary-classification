@@ -11,7 +11,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.pipeline import make_pipeline
 
-# Command-line argument parsing (e.g., to replicate the best 80% model, run: python model_training.py --model RF --analyzer char_wb --features 1000)
+# Command-line argument parsing for testing different models and settings
 parser = argparse.ArgumentParser(description="Train a book classification model.")
 parser.add_argument('--model', type=str, choices=['LR', 'RF', 'MLP', 'SVM', 'NB', 'ALL'], default='LR', help="Choose LR (Logistic Regression), RF (Random Forest), MLP (Multi-Layer Perceptron), SVM (Support Vector Machine), NB (Naive Bayes), or ALL")
 parser.add_argument('--features', type=int, default=100, help="Maximum number of TF-IDF terms to track")
@@ -31,6 +31,7 @@ else:
     if args.ngram_max is None:
         args.ngram_max = max(default_ngram_max, args.ngram_min)
 
+# Error handling in case of wrong argument values
 if args.features < 1:
     parser.error("--features must be at least 1")
 if args.lr_c <= 0:
@@ -49,12 +50,13 @@ df = pd.read_csv("books_data_clean.csv")
 # Combine 'title' and 'description' for maximum text context, with fillna("") to handle any missing values
 df['combined_text'] = df['title'].fillna("") + " " + df['description'].fillna("")
 
-# Predict the 'category' based on the combined text
+# Predict the target category based on the combined text
 X_text = df['combined_text']    # Input feature
 y_target = df['category']       # Target category
 
 print("Converting text into mathematical features (TF-IDF)...")
 stop_words = 'english' if args.analyzer == 'word' else None
+# Print the TF-IDF settings and evaluation strategy
 print(
     f"TF-IDF settings: analyzer={args.analyzer}, max_features={args.features}, "
     f"n-grams={args.ngram_min}-{args.ngram_max}, "
@@ -71,7 +73,7 @@ vectorizer = TfidfVectorizer(
     ngram_range=(args.ngram_min, args.ngram_max),
 )
 
-# Use one reproducible, stratified 80/20 split for a single set of test metrics
+# Use one perfectly reproducible, stratified 80/20 split for a single set of test metrics
 X_train, X_test, y_train, y_test = train_test_split(
     X_text,
     y_target,
@@ -79,7 +81,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     random_state=42,
     stratify=y_target,
 )
-
+# All models that can be tested with default values or user-specified values
 models_to_test = {}
 if args.model in ['LR', 'ALL']:
     models_to_test['Logistic Regression'] = LogisticRegression(max_iter=2000, random_state=42, C=args.lr_c)
@@ -102,6 +104,7 @@ for model_name, model in models_to_test.items():
     pipeline.fit(X_train, y_train)
     y_predictions = pipeline.predict(X_test)
 
+    # Print the final accuracy for the tested model and the classification report for detailed metrics
     accuracy = accuracy_score(y_test, y_predictions)
     print(f"\nFinal {model_name} Accuracy: {accuracy * 100:.2f}%\n")
     print(classification_report(y_test, y_predictions, zero_division=0))
@@ -109,6 +112,7 @@ for model_name, model in models_to_test.items():
     # Append the results to the log file EXPERIMENTS.md
     with open("EXPERIMENTS.md", "a") as f:
         date_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+        # Log all the important information about the model and settings tested
         inputs_used = (
             f"Title + Description (TF-IDF analyzer {args.analyzer}; max {args.features}; "
             f"n-grams {args.ngram_min}-{args.ngram_max}; "
